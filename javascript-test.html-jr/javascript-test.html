@@ -1,0 +1,198 @@
+<!doctype html>
+	<head>
+		<title>FED Test</title>
+		<style>
+			body {
+				margin: 40px;
+				font-family: arial, sans-serif;
+				font-size: 14px;
+				line-height: 1.6;
+			}
+
+			fieldset {
+				border: none;
+			}
+
+			legend {
+				font-weight: bold;
+				font-size: 16px;
+			}
+
+			.animal-list {
+				margin: 25px 0 0;
+				padding: 15px;
+				color: #5CB6B2;
+				border: 2px solid #6DCFCA;
+			}
+
+			code {
+				display: block;
+				margin: 0 0 40px;
+				padding: 15px;
+				background: #ddd;
+				word-wrap: break-word;
+			}
+			section {
+				float: left;
+				width: 40%;
+				box-sizing: border-box;
+			}
+
+			.instructions {
+				margin: 0 0 0 10%;
+				font-size: 12px;
+			}
+
+			h2 {
+				margin-top: 0;
+				font-size: 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Javascript Test</h1>
+		<section>
+			<form>
+				<fieldset>
+					<legend>Choose an option to sort the list</legend>
+					<div id="sort-options" class="sort-options">
+						<input type="radio" name="sort" onclick="sortRandom()"> Random <br>
+						<input type="radio" name="sort" onclick="sortAlpha()"> Alpha <br>
+						<input type="radio" name="sort" onclick="sortAlphaAlt()"> Alpha Starting with <select id="sel-animal-start"></select><br>
+					</div>
+
+					<!-- ************  Display the animal list in this div ************* -->
+					<div id="animal-list" class="animal-list"></div>
+				</fieldset>
+			</form>
+		</section>
+		<section class="instructions">
+			<h2>Instructions</h2>
+			<p>Using the array of animals below, display the list in the &lt;div&gt; marked in the code. Clicking a radio button or selecting from the pulldown should automatically re-sort the list based on the option chosen. Please use vanilla javascript (no jQuery, etc.) to complete this exercise. The logic for the selections is as follows:</p>
+
+			<p><strong>Random</strong> - Randomize the list, this should be truly random not simply putting the list in it's original random order.</p>
+
+			<p><strong>Alpha</strong> - Programmatically sort the list alphabetically from A to Z</p>
+
+			<p><strong>Alpha starting with <select></select></strong> - The pulldown should contain a list of all the animals. Choosing an animal should make it the first item in the list, and the list should continue alphabetically from there. You do not need to make the wrap around to the beginning and list all of the animals, but you may if you wish.</p>
+
+			<h3>The Array</h3>
+			<p><code id="array">var animals = ["Lemur","Salamander","Alligator","Vervet","Camel","Eagle","Gazelle","Hippopotamus","Jackal","Ibis","Deer","Baboon","Kangaroo","Falcon","Narwhal","Octopus","Zebra","Panther","Manatee","Raccoon","Quail","Unau","Walrus","X-ray fish","Yabby","Tiger"]</code></p>
+		</section>
+	</body>
+
+	<script type="text/javascript">
+		var animalsOrig = [];
+		var divSort = document.getElementById("animal-list");
+
+		function sortRandom(){
+			getArrayFromDiv();
+
+			animalsOrig = shuffle(animalsOrig);
+			addToAndClearList(animalsOrig);
+		}
+		function shuffle(array) {
+			//i chose Fisher-Yates random shuffle
+			//https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+			var currentIndex = array.length, temporaryValue, randomIndex;
+
+			// While there remain elements to shuffle...
+			while (0 !== currentIndex) {
+				// Pick a remaining element...
+				randomIndex = Math.floor(Math.random() * currentIndex);
+				currentIndex -= 1;
+
+				// And swap it with the current element.
+				temporaryValue = array[currentIndex];
+				array[currentIndex] = array[randomIndex];
+				array[randomIndex] = temporaryValue;
+			}
+			return array;
+		}
+
+		function sortAlpha(){
+			getArrayFromDiv();
+
+			var animalsArr = animalsOrig.sort();
+			document.getElementById("animals-array").innerHTML = null;
+			addToAndClearList(animalsArr);
+		}
+
+		function sortAlphaAlt(){
+			getArrayFromDiv();
+
+			//sorts by selected value in the list and adds to the list
+			var key = document.getElementById("sel-animal-start").value;
+			var sortedArr = sortByKey(animalsOrig, key);
+			addToAndClearList(sortedArr);
+		}
+		function sortByKey(array, key){
+			array = array.sort();
+			var arrLength = array.length;
+			var tempArr = [];
+
+			//determine initial location to begin sorting
+			var startPos = array.indexOf(key);
+
+			//add starting element and predicate elements to array
+			for(var i = 0; i < arrLength - startPos; i++){
+				tempArr.push(array[i + startPos]);
+			}
+
+			//remove elements already added to array
+			array.splice(startPos, arrLength - startPos);
+			//add remaining elements to end of the array
+			for(var i = 0; i < array.length; i++){
+				tempArr.push(array[i]);
+			}
+
+			return tempArr;
+		}
+
+		function getArrayFromDiv(){
+			//so huge security issue here... normally id never do anything like this but id also never expect to have my code given to me by my interface
+			//alternative would be to split the string but would be subjective to the character count
+			eval(document.getElementById("array").innerHTML);
+			animalsOrig = animals;
+		}
+
+		function addToAndClearList(array){
+			//clears the select list and adds the new array to it
+			document.getElementById("animals-array").innerHTML = null;
+			for(var i = 0; i < array.length; i++){
+				var opt = document.createElement("OPTION");
+				opt.value = array[i];
+				opt.text = array[i];
+				document.getElementById("animals-array").appendChild(opt);
+			}
+		}
+
+		function init(){
+			getArrayFromDiv();
+
+			var selectList = document.createElement("SELECT");
+			selectList.id = "animals-array";
+			selectList.onchange = function(){ sortAlphaAlt() };
+			divSort.appendChild(selectList);
+
+			addToAndClearList(animalsOrig);
+
+			//sel-animal-start
+			document.getElementById("sel-animal-start").innerHTML = null;
+			for(var i = 0; i < animalsOrig.length; i++){
+				var opt = document.createElement("OPTION");
+				opt.value = animalsOrig[i];
+				opt.text = animalsOrig[i];
+				document.getElementById("sel-animal-start").appendChild(opt);
+			}
+		}
+		init();
+
+		/* document.getElementById("sel-animal-start").addEventListener("change", function(){
+			sortAlphaAlt();
+		});
+		*/
+		//uncomment to live update list change instead of radio button click... did it wrong the first time
+	</script>
+</html>
+
